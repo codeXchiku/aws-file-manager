@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Folder, File, ChevronRight, ChevronDown, Home, Download, Loader2 } from 'lucide-react'
+import UploadButton from '@/components/ui/upload-button'
 
 interface FileItem {
   Key: string
@@ -169,6 +170,20 @@ const FileStructure: React.FC<FileStructureProps> = ({
                         </span>
                       )}
                     </div>
+                    
+                    {/* Upload button for folders */}
+                    {item.Type === 'folder' && (
+                      <UploadButton
+                        folderPath={item.Key}
+                        onUploadComplete={() => {
+                          // Refresh the current folder's contents
+                          if (onNavigate) {
+                            onNavigate(currentPath || '')
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                    )}
                     
                     {/* Download button for files */}
                     {item.Type === 'file' && (
