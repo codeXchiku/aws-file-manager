@@ -1,10 +1,11 @@
 import NavBar from "@/components/nav";
-import Image from "next/image";
+import FileManager from "@/components/file-manager";
 
 export default function Home() {
   return (
     <>
-    <NavBar/>
+      <NavBar/>
+      <FileManager/>
     </>
   );
 }

@@ -11,8 +11,33 @@ const client = new S3Client({
 
 export async function GET(request: NextRequest) {
     try {
-        // Only root level: prefix is undefined or empty string
         const prefix = request.nextUrl.searchParams.get("prefix") ?? ""
+        
+        // If prefix is provided (we're inside a folder), get files in that folder
+        if (prefix) {
+            const command = new ListObjectsV2Command({
+                Bucket: "myfilemanager-bucket",
+                Prefix: prefix,
+            })
+            const result = await client.send(command)
+            
+            // Filter out the folder itself and get only files inside the folder
+            const files = result.Contents?.filter(e => {
+                // Skip the folder itself
+                if (e.Key === prefix) return false
+                // Only include files that are direct children of this folder
+                const relativeKey = e.Key?.substring(prefix.length)
+                return relativeKey && !relativeKey.includes("/")
+            }).map(e => ({
+                Key: e.Key,
+                Size: e.Size,
+                Type: "file",
+            })) ?? []
+            
+            return NextResponse.json({ items: files })
+        }
+        
+        // If no prefix (root level), get folders and files at root
         const command = new ListObjectsV2Command({
             Bucket: "myfilemanager-bucket",
             Delimiter: "/",
@@ -23,12 +48,19 @@ export async function GET(request: NextRequest) {
             Key: e.Prefix,
             Type: "folder",
         })) ?? []
-        // Only files at root level (no '/')
-        const files = result.Contents?.filter(e => !e.Key?.includes("/")).map(e => ({
+        
+        // Get files at current level (excluding the folder itself if it appears in Contents)
+        const files = result.Contents?.filter(e => {
+            // Skip if it's the folder itself (ends with /)
+            if (e.Key?.endsWith("/")) return false
+            // Include files that don't contain "/" (files at current level)
+            return !e.Key?.includes("/")
+        }).map(e => ({
             Key: e.Key,
             Size: e.Size,
             Type: "file",
         })) ?? []
+        
         return NextResponse.json({ items: [...folders, ...files] })
     } catch (error) {
         console.error(error)
