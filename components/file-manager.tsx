@@ -5,6 +5,7 @@ import FileStructure from './file-structure'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RefreshCw, Loader2 } from 'lucide-react'
+import UploadButton from '@/components/ui/upload-button'
 
 interface FileItem {
   Key: string
@@ -77,18 +78,24 @@ const FileManager: React.FC = () => {
       <div className="w-full max-w-4xl mx-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">AWS File Manager</h1>
-          <Button 
-            onClick={handleRefresh} 
-            variant="outline" 
-            disabled={loading}
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4 mr-2" />
-            )}
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <UploadButton
+              folderPath=""
+              onUploadComplete={handleRefresh}
+            />
+            <Button 
+              onClick={handleRefresh} 
+              variant="outline" 
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {loading ? (
